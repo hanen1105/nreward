@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>N-Reward | Classroom Management</title>
+<style>
+:root {
+  --primary: #5b6cff;
+  --secondary: #ffb703;
+  --bg: #f5f7fb;
+  --dark: #1f2937;
+  --card: #ffffff;
+}
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+}
+header {
+  background: var(--primary);
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.logo {
+  width: 60px;
+  height: auto;
+}
+header h1 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+header p {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #ffe066; /* golden star color matching your logo */
+}
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  background: #fff;
+  padding: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+nav a {
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: bold;
+  cursor: pointer;
+}
+section {
+  display: none;
+  padding: 30px;
+  max-width: 1100px;
+  margin: auto;
+}
+section.active {
+  display: block;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+button {
+  background: var(--secondary);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 5px;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+}
+.stars {
+  font-size: 20px;
+  color: gold;
+}
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #ffb703;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  opacity: 0;
+  transition: 0.5s;
+  z-index: 100;
+}
+.notification.show {
+  opacity: 1;
+}
+
+/* Star animations */
+.star-fly {
+  position: fixed;
+  font-size: 24px;
+  pointer-events: none;
+  animation: fly 1s ease-out forwards;
+}
+.minus-grow {
+  position: fixed;
+  font-size: 60px;
+  color: red;
+  pointer-events: none;
+  animation: growfade 0.8s ease-out forwards;
+}
+@keyframes fly {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px) scale(1.5);
+  }
+}
+@keyframes growfade {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+/* Certificate Styles */
+.certificate {
+  width: 800px;
+  height: 600px;
+  padding: 40px;
+  border: 15px solid var(--primary);
+  border-radius: 25px;
+  background: linear-gradient(to bottom right, #fff7e6, #e6f0ff);
+  color: var(--dark);
+  font-family: 'Georgia', serif;
+  text-align: center;
+  position: relative;
+}
+.certificate h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: var(--primary);
+}
+.certificate h2 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+.certificate p {
+  font-size: 20px;
+  margin: 5px 0;
+}
+.certificate .badge {
+  font-size: 24px;
+  margin-top: 15px;
+}
+.certificate .seal {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  font-size: 40px;
+  color: gold;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-report,
+  #printable-report * {
+    visibility: visible;
+  }
+
+  #printable-certificate,
+  #printable-certificate * {
+    visibility: visible;
+  }
+@media print {
+  #printable-certificate {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    page-break-after: avoid;
+  }
+
+  .kids-certificate {
+    margin: auto;
+  }
+}
+  #printable-report,
+  #printable-certificate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
+/* Modern card styles */
+.modern-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 280px;
+  flex: 0 0 auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+.modern-card h3 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+/* Reward button colors */
+.reward-btn {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  color: #fff;
+}
+
+/* Button color classes */
+.simple { background-color: #ffeaa7; color: #2d3436; }
+.simple:hover { background-color: #ffd24d; }
+
+.fun { background-color: #81ecec; color: #2d3436; }
+.fun:hover { background-color: #00b8b8; color: #fff; }
+
+.special { background-color: #fab1a0; color: #2d3436; }
+.special:hover { background-color: #ff6b6b; color: #fff; }
+
+.motivational { background-color: #a29bfe; color: #2d3436; }
+.motivational:hover { background-color: #6c5ce7; color: #fff; }
+
+/* Horizontal scroll for container */
+.card-container::-webkit-scrollbar {
+  height: 8px;
+}
+.card-container::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 4px;
+}
+.card-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.reward-burst {
+  position: fixed;
+  font-size: 28px;
+  pointer-events: none;
+  animation: burst 1.2s ease-out forwards;
+}
+
+@keyframes burst {
+  0% {
+    opacity: 1;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(2);
+  }
+}
+/* ===== Fancy Certificate Styles ===== */
+/* ===== Kids Fancy Certificate ===== */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@700&display=swap');
+
+.kids-certificate {
+  min-height: auto;
+  height: auto;
+  padding: 40px;
+  background: linear-gradient(135deg, #fffaf0, #f0ffff);
+  border-radius: 35px;
+  border: 15px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  
+  font-family: "Comic Neue", cursive;
+}
+
+.kids-certificate::before {
+  content: "";
+  position: absolute;
+  inset: -15px;
+  border-radius: 40px;
+  background: conic-gradient(from 0deg, #ff6ec7, #ffd700, #00e5ff, #ff6ec7);
+  z-index: -1;
+}
+
+.kids-inner-frame {
+  position: absolute;
+  inset: 15px;
+  border: 5px dashed #ffcc00;
+  border-radius: 25px;
+}
+
+.kids-title h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 60px;
+  color: #ff6ec7;
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+.kids-title span {
+  display: block;
+  text-align: center;
+  font-size: 22px;
+  color: #555;
+}
+
+.kids-ribbon {
+  margin: 25px auto;
+  width: fit-content;
+  background: linear-gradient(90deg, #ffcc00, #ff6ec7);
+  padding: 12px 50px;
+  border-radius: 50px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.kids-name {
+  text-align: center;
+  font-size: 46px;
+  font-weight: bold;
+  margin: 20px 0;
+  color: #ff4500;
+}
+
+.kids-info {
+  text-align: center;
+  font-size: 22px;
+}
+
+.kids-stars {
+  text-align: center;
+  font-size: 34px;
+  color: gold;
+  margin: 15px 0;
+}
+
+.kids-badge {
+  margin: 20px auto;
+  width: fit-content;
+  padding: 18px 35px;
+  background: linear-gradient(135deg, #ffe4e1, #fff0f5);
+  border-radius: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ff69b4;
+  text-align: center;
+}
+
+.kids-footer {
+  position: absolute;
+  bottom: 40px;
+  left: 50px;
+  font-size: 18px;
+}
+
+.kids-seal {
+  position: absolute;
+  bottom: 30px;
+  right: 50px;
+  font-size: 100px;
+  color: gold;
+}
+
+/* Print safety */
+@media print {
+.kids-certificate {
+    overflow: hidden;
+  }
+  body {
+    background: white !important;
+  }
+}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="
+  position:fixed;
+  inset:0;
+  background:#f5f7fb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+">
+  <div style="
+    background:#fff;
+    padding:30px;
+    border-radius:16px;
+    width:320px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+    text-align:center;
+  ">
+    <h2 style="margin-bottom:10px;">👩‍🏫 Teacher Login</h2>
+    <p style="color:#666; margin-bottom:20px;">N-Reward Access</p>
+
+    <input id="login-username" placeholder="Username" />
+    <input id="login-password" type="password" placeholder="Password" />
+
+    <button style="width:100%;" onclick="teacherLogin()">Login</button>
+
+    <p id="login-error" style="color:red; display:none; margin-top:10px;">
+      Invalid login
+    </p>
+  </div>
+</div>
+<header>
+  <div class="logo-container">
+    <img src="n-reward-logo.png" alt="N-Reward Logo" class="logo" />
+    <h1>N-Reward</h1>
+  </div>
+  <p>Motivate • Reward • Succeed</p>
+</header>
+
+<nav>
+  <a onclick="showSection('dashboard')">Dashboard</a>
+  <a onclick="showSection('students')">Students</a>
+  <a onclick="showSection('rewards')">Rewards</a>
+<a onclick="showSection('reports')">Reports</a> <!-- New -->
+<a onclick="logout()">Logout</a>
+</nav>
+
+<section id="dashboard" class="active">
+  <h2>Teacher Command Center</h2>
+  <div class="grid">
+    <div class="card"><h3>Total Students</h3><p id="total-students">0 🏫</p></div>
+    <div class="card"><h3>Stars Given Today</h3><p class="stars" id="star-count">⭐ 0</p></div>
+    <div class="card"><h3>Top Performer (Whole School)</h3><p id="top-performer">⭐ None Yet</p></div>
+  </div>
+
+  <hr />
+  <h3>Check Top Student by Category / Grade / Class</h3>
+  <label for="dash-category">Select Category:</label>
+  <select id="dash-category" onchange="updateDashGradeOptions()"></select>
+
+  <label for="dash-grade">Select Grade:</label>
+  <select id="dash-grade" onchange="updateDashClassOptions()"></select>
+
+  <label for="dash-class">Select Class:</label>
+  <select id="dash-class" onchange="updateTopStudents()"></select>
+
+  <div class="grid" style="margin-top: 20px;">
+    <div class="card">
+      <h3>Top Student in Class</h3>
+      <p id="top-class">⭐ None</p>
+    </div>
+    <div class="card">
+      <h3>Top Student in Category</h3>
+      <p id="top-category">⭐ None</p>
+    </div>
+  </div>
+</section>
+
+<section id="students">
+  <h2>Students by Class</h2>
+
+  <label for="category-select">Select Category:</label>
+  <select id="category-select" onchange="updateGradeOptions()"></select>
+
+  <label for="grade-select">Select Grade:</label>
+  <select id="grade-select" onchange="updateClassOptions()"></select>
+
+  <label for="class-select">Select Class:</label>
+  <select id="class-select" onchange="renderStudents()"></select>
+
+  <div id="student-grid" class="grid"></div>
+
+  <hr />
+  <h3>Add a New Student</h3>
+  <input type="text" id="new-student-name" placeholder="Student Name" />
+  <button onclick="addNewStudent()">Add Student</button>
+
+  <hr />
+  <h3>Import Students (CSV: ID, Name)</h3>
+  <textarea
+    id="import-list"
+    placeholder="001, Ahmed&#10;002, Sarah"
+  ></textarea>
+  <button onclick="importStudents()">Import Students</button>
+</section>
+<section id="rewards">
+  <h2 style="text-align:center; font-size:2rem; margin-bottom:20px;">🎯 School Reward System</h2>
+
+  <div class="student-selection" style="display:flex; gap:15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
+    <select id="reward-category-select" style="padding:10px 12px; border-radius:8px; border:1px solid #ccc;">
+      <option value="">Select Category</option>
+    </select>
+
+    <select id="reward-grade-select" style="padding:10px 12px; border-radius:8px; border:1px solid #ccc;">
+      <option value="">Select Grade</option>
+    </select>
+
+    <select id="reward-class-select" style="padding:10px 12px; border-radius:8px; border:1px solid #ccc;">
+      <option value="">Select Class</option>
+    </select>
+
+    <select id="reward-student-select" style="padding:10px 12px; border-radius:8px; border:1px solid #ccc;">
+      <option value="">Select Student</option>
+    </select>
+<!-- Selected Student Info -->
+<div id="selected-student-info" style="
+  display:none;
+  margin-top:15px;
+  padding:15px;
+  background:#ffffff;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  text-align:center;
+  font-weight:600;
+">
+  👤 <span id="info-name"></span><br>
+  🏫 <span id="info-class"></span><br>
+  ⭐ <span id="info-stars"></span>
+</div>
+  </div>
+
+  <div class="card-container" style="display:flex; gap:20px; overflow-x:auto; padding-bottom:20px; scrollbar-width: thin;">
+    <!-- Simple Rewards -->
+    <div class="card modern-card">
+      <h3>🎁 Simple Rewards</h3>
+      <button class="reward-btn simple" onclick="redeemReward(20, 'Stickers / Stars')">20 ⭐ Stickers / Stars</button>
+      <button class="reward-btn simple" onclick="redeemReward(30, 'Choose pen or stationery color')">30 ⭐ Choose pen/stationery color</button>
+      <button class="reward-btn simple" onclick="redeemReward(40, 'Pick a favorite seat for one day')">40 ⭐ Pick favorite seat</button>
+      <button class="reward-btn simple" onclick="redeemReward(50, '10 minutes of educational play')">50 ⭐ Educational play</button>
+    </div>
+
+    <!-- Fun / Creative Rewards -->
+    <div class="card modern-card">
+      <h3>🎨 Fun / Creative Rewards</h3>
+      <button class="reward-btn fun" onclick="redeemReward(70, 'Free drawing / coloring time')">70 ⭐ Free drawing</button>
+      <button class="reward-btn fun" onclick="redeemReward(90, 'Group educational games')">90 ⭐ Group games</button>
+      <button class="reward-btn fun" onclick="redeemReward(100, 'Extra playground time')">100 ⭐ Extra playground</button>
+      <button class="reward-btn fun" onclick="redeemReward(120, 'Listen to a story or short educational video')">120 ⭐ Story/video</button>
+    </div>
+
+    <!-- Special Rewards -->
+    <div class="card modern-card">
+      <h3>🏆 Special Rewards</h3>
+      <button class="reward-btn special" onclick="redeemReward(150, 'Watch an educational movie')">150 ⭐ Movie</button>
+      <button class="reward-btn special" onclick="redeemReward(180, 'Movie + snack')">180 ⭐ Movie + snack</button>
+      <button class="reward-btn special" onclick="redeemReward(200, 'Movie + invite best friend')">200 ⭐ Movie + friend</button>
+      <button class="reward-btn special" onclick="redeemReward(250, 'Movie + invite two friends')">250 ⭐ Movie + 2 friends</button>
+    </div>
+
+    <!-- Motivational Rewards -->
+    <div class="card modern-card">
+      <h3>⭐ Motivational Rewards</h3>
+      <button class="reward-btn motivational" onclick="showNotification('🏅 Student of the Week certificate awarded!','#5b6cff')">Student of the Week</button>
+      <button class="reward-btn motivational" onclick="showNotification('✨ Name displayed on the Honor Board','#5b6cff')">Name on Honor Board</button>
+      <button class="reward-btn motivational" onclick="showNotification('📸 Class photo keepsake','#5b6cff')">Class photo keepsake</button>
+      <button class="reward-btn motivational" onclick="showNotification('🎓 Assist the teacher','#5b6cff')">Assist the teacher</button>
+    </div>
+  </div>
+</div> <!-- end card-container -->
+</section> <!-- ✅ CLOSE rewards section -->
+<section id="reports">
+  <h2>📊 Reports</h2>
+  
+  <div style="margin-bottom: 20px;">
+    <label for="report-category">Category:</label>
+    <select id="report-category" onchange="updateReportGradeOptions()"></select>
+
+    <label for="report-grade">Grade:</label>
+    <select id="report-grade" onchange="updateReportClassOptions()"></select>
+
+    <label for="report-class">Class:</label>
+    <select id="report-class" onchange="generateReport()"></select>
+  </div>
+
+  <div id="report-content" style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.08);">
+    <h3>Report will appear here</h3>
+  </div>
+</section>
+<div id="notification" class="notification"></div>
+
+<!-- Printable certificate container -->
+<div id="printable-certificate" style="display: none;"></div>
+
+<!-- Sounds -->
+<audio
+  id="star-sound"
+  preload="auto"
+  src="https://orangefreesounds.com/wp-content/uploads/2025/08/Positive-success-tone.mp3"
+></audio>
+<audio
+  id="remove-sound"
+  preload="auto"
+  src="https://www.orangefreesounds.com/wp-content/uploads/2014/10/Fail-sound.mp3"
+></audio>
+<audio
+  id="reward-sound"
+  preload="auto"
+  src="https://orangefreesounds.com/wp-content/uploads/2023/05/Happy-crowd-sound-effect.mp3">
+</audio>
+
+<footer>
+  <p>© 2026 N-Reward | Digital Education Revolution</p>
+</footer>
+<!-- Certificate Preview Modal -->
+<div id="certificate-modal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:10000;
+  justify-content:center;
+  align-items:center;
+">
+
+  <div style="
+    background:#fff;
+    padding:20px;
+    border-radius:16px;
+    max-width:1000px;
+    max-height:90vh;
+    overflow:auto;
+    position:relative;
+  ">
+
+    <button onclick="closeCertificatePreview()" style="
+      position:absolute;
+      top:10px;
+      right:10px;
+      background:#e63946;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:6px 10px;
+      font-weight:bold;
+      cursor:pointer;
+    ">✖</button>
+
+    <div id="certificate-preview"></div>
+
+    <div style="text-align:center; margin-top:15px;">
+      <button onclick="printFromPreview()" style="padding:10px 20px;">
+        🖨️ Print Certificate
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
+<script>
+// DATABASE
+const db = new Dexie("NRewardDB");
+db.version(1).stores({
+  students: "++id, category, grade, class, name, stars, badge, level",
+  starEvents: "++id, studentId, type, timestamp"
+});
+
+// ELEMENTS
+const notification = document.getElementById("notification");
+const starCountEl = document.getElementById("star-count");
+const topPerformerEl = document.getElementById("top-performer");
+const studentGrid = document.getElementById("student-grid");
+const totalStudentsEl = document.getElementById("total-students");
+
+const categorySelect = document.getElementById("category-select");
+const gradeSelect = document.getElementById("grade-select");
+const classSelect = document.getElementById("class-select");
+
+const dashCategory = document.getElementById("dash-category");
+const dashGrade = document.getElementById("dash-grade");
+const dashClass = document.getElementById("dash-class");
+
+const starSound = document.getElementById("star-sound");
+const removeSound = document.getElementById("remove-sound");
+
+const printableCertificate = document.getElementById("printable-certificate");
+const rewardSound = document.getElementById("reward-sound");
+const gradesByCategory = {
+  preschool: ["KG1", "KG2", "KG3"],
+  grade1_2: ["Grade1", "Grade2"],
+  primary: ["Grade3", "Grade4", "Grade5", "Grade6"],
+  middle: ["Grade7", "Grade8", "Grade9"],
+  secondary: ["Grade10", "Grade11", "Grade12"]
+};
+
+const classesByGrade = {
+  KG1: ["A", "B", "C"],
+  KG2: ["A", "B", "C"],
+  KG3: ["A", "B"],
+  Grade1: ["A", "B", "C"],
+  Grade2: ["A", "B", "C"],
+  Grade3: ["A", "B", "C", "D"],
+  Grade4: ["A", "B", "C", "D"],
+  Grade5: ["A", "B", "C", "D"],
+  Grade6: ["A", "B", "C", "D"],
+  Grade7: ["A", "B", "C", "D"],
+  Grade8: ["A", "B", "C", "D"],
+  Grade9: ["A", "B", "C", "D"],
+  Grade10: ["A", "B", "C"],
+  Grade11: ["A", "B", "C"],
+  Grade12: ["A", "B", "C"]
+};
+
+// LEVELS & BADGES
+function getLevel(stars) {
+  if (stars >= 30) return "Champion";
+  if (stars >= 15) return "Star Student";
+  if (stars >= 5) return "Beginner";
+  return "Newbie";
+}
+function getBadge(stars) {
+  let badge = "";
+
+  for (let i = 0; i < STAR_BADGES.length; i++) {
+    if (stars >= STAR_BADGES[i].stars) {
+      badge = `${STAR_BADGES[i].emoji} ${STAR_BADGES[i].title}`;
+    } else {
+      break;
+    }
+  }
+
+  return badge;
+}const STAR_BADGES = [
+  { stars: 10,  title: "Star Starter", emoji: "✨" },
+  { stars: 50,  title: "Rising Star", emoji: "🌱" },
+  { stars: 100, title: "Bright Star", emoji: "🌟" },
+  { stars: 150, title: "Super Star", emoji: "🚀" },
+  { stars: 200, title: "Shooting Star", emoji: "☄️" },
+  { stars: 250, title: "Golden Star", emoji: "🏅" },
+  { stars: 300, title: "Silver Star", emoji: "🥈" },
+  { stars: 350, title: "Sparkling Star", emoji: "💫" },
+  { stars: 400, title: "Shining Star", emoji: "🔆" },
+  { stars: 450, title: "Dazzling Star", emoji: "✨🔥" },
+  { stars: 500, title: "Star Champion", emoji: "🏆" },
+  { stars: 550, title: "Star Achiever", emoji: "🎯" },
+  { stars: 600, title: "Star Explorer", emoji: "🧭" },
+  { stars: 650, title: "Star Performer", emoji: "🎭" },
+  { stars: 700, title: "Star Hero", emoji: "🦸‍♂️" },
+  { stars: 750, title: "Star Leader", emoji: "👑" },
+  { stars: 800, title: "Star Expert", emoji: "🧠" },
+  { stars: 850, title: "Star Master", emoji: "🎓" },
+  { stars: 900, title: "Star Legend", emoji: "🐉" },
+  { stars: 950, title: "Star Elite", emoji: "💎" },
+  { stars: 1000, title: "Star Royalty", emoji: "👑✨" },
+  { stars: 1050, title: "Star Icon", emoji: "🌠" },
+  { stars: 1100, title: "Star Ambassador", emoji: "🤝" },
+  { stars: 1150, title: "Star Pioneer", emoji: "🚀🌍" },
+  { stars: 1200, title: "Star Trailblazer", emoji: "🔥🥾" },
+  { stars: 1250, title: "Star Mentor", emoji: "🧑‍🏫" },
+  { stars: 1300, title: "Star Inspirer", emoji: "💡" },
+  { stars: 1350, title: "Star Visionary", emoji: "👁️✨" },
+  { stars: 1400, title: "Star Magnate", emoji: "💼💎" },
+  { stars: 1450, title: "Star Titan", emoji: "⚔️" },
+  { stars: 1500, title: "Star Conqueror", emoji: "🏹" },
+  { stars: 1550, title: "Star Guardian", emoji: "🛡️" },
+  { stars: 1600, title: "Star Commander", emoji: "🎖️" },
+  { stars: 1650, title: "Star Captain", emoji: "🧑‍✈️" },
+  { stars: 1700, title: "Star General", emoji: "⭐⚔️" },
+  { stars: 1750, title: "Star Ruler", emoji: "👑🔥" },
+  { stars: 1800, title: "Star Supreme", emoji: "🌌" },
+  { stars: 1850, title: "Star Emperor", emoji: "🏛️👑" },
+  { stars: 1900, title: "Star Galaxy", emoji: "🌌⭐" },
+  { stars: 1950, title: "Star Universe", emoji: "🌠🌍" },
+  { stars: 2000, title: "Star Infinity", emoji: "♾️⭐" }
+];  
+
+// NOTIFICATION
+function showNotification(message, color = "#ffb703") {
+  notification.textContent = message;
+  notification.style.background = color;
+  notification.classList.add("show");
+  setTimeout(() => notification.classList.remove("show"), 2000);
+}
+
+// NAV
+function showSection(id) {
+  document.querySelectorAll("section").forEach((sec) => sec.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// POPULATE CATEGORIES
+function populateCategories() {
+  categorySelect.innerHTML = "";
+  dashCategory.innerHTML = "";
+  Object.keys(gradesByCategory).forEach((cat) => {
+    const opt1 = document.createElement("option");
+    opt1.value = cat;
+    opt1.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    categorySelect.appendChild(opt1);
+    const opt2 = document.createElement("option");
+    opt2.value = cat;
+    opt2.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    dashCategory.appendChild(opt2);
+  });
+  updateGradeOptions();
+  updateDashGradeOptions();
+}
+
+// STUDENTS SECTION
+function updateGradeOptions() {
+  const cat = categorySelect.value;
+  gradeSelect.innerHTML = "";
+  gradesByCategory[cat].forEach((grade) => {
+    const opt = document.createElement("option");
+    opt.value = grade;
+    opt.textContent = grade;
+    gradeSelect.appendChild(opt);
+  });
+  updateClassOptions();
+}
+
+function updateClassOptions() {
+  const grade = gradeSelect.value;
+  classSelect.innerHTML = "";
+  classesByGrade[grade].forEach((cls) => {
+    const opt = document.createElement("option");
+    opt.value = cls;
+    opt.textContent = cls;
+    classSelect.appendChild(opt);
+  });
+  renderStudents();
+}
+
+// DASHBOARD SECTION
+function updateDashGradeOptions() {
+  const cat = dashCategory.value;
+  dashGrade.innerHTML = "";
+  gradesByCategory[cat].forEach((grade) => {
+    const opt = document.createElement("option");
+    opt.value = grade;
+    opt.textContent = grade;
+    dashGrade.appendChild(opt);
+  });
+  updateDashClassOptions();
+}
+
+function updateDashClassOptions() {
+  const grade = dashGrade.value;
+  dashClass.innerHTML = "";
+  classesByGrade[grade].forEach((cls) => {
+    const opt = document.createElement("option");
+    opt.value = cls;
+    opt.textContent = cls;
+    dashClass.appendChild(opt);
+  });
+  updateTopStudents();
+}
+
+// STUDENT RENDER
+async function renderStudents() {
+  const cat = categorySelect.value;
+  const grade = gradeSelect.value;
+  const cls = classSelect.value;
+  const classStudents = await db.students.where({ category: cat, grade: grade, class: cls }).toArray();
+  studentGrid.innerHTML = "";
+  for (let student of classStudents) {
+    student.level = getLevel(student.stars);
+    student.badge = getBadge(student.stars);
+    await db.students.update(student.id, { level: student.level, badge: student.badge });
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>${student.name} (${student.grade}-${student.class})</h3>
+      <p>Stars: <span class="stars" id="stars-${student.id}">⭐ ${student.stars}</span></p>
+      <p class="level">Level: ${student.level}</p>
+      <div class="badge">Badge: ${student.badge}</div>
+      <button onclick="addStar(${student.id},event)">⭐ Add Star</button>
+      <button onclick="removeStar(${student.id},event)">⚠ Remove Star</button>
+      <button onclick="deleteStudent(${student.id})">🗑️ Delete</button>
+      <button onclick="previewCertificate(${student.id})">🎓 View Certificate</button>    `;
+    studentGrid.appendChild(card);
+  }
+  await updateDashboard();
+}
+
+// ADD STUDENT
+async function addNewStudent() {
+  const name = document.getElementById("new-student-name").value.trim();
+  if (!name) {
+    alert("Enter a valid name");
+    return;
+  }
+  const cat = categorySelect.value;
+  const grade = gradeSelect.value;
+  const cls = classSelect.value;
+  const existing = await db.students.where({ category: cat, grade: grade, class: cls, name }).first();
+  if (existing) {
+    alert("Student exists!");
+    return;
+  }
+  await db.students.add({ category: cat, grade: grade, class: cls, name, stars: 0, badge: "", level: "Newbie" });
+  document.getElementById("new-student-name").value = "";
+  showNotification(`✅ ${name} added!`, "#5b6cff");
+  renderStudents();
+}
+
+// IMPORT
+async function importStudents() {
+  const lines = document.getElementById("import-list").value.trim().split("\n");
+  const cat = categorySelect.value;
+  const grade = gradeSelect.value;
+  const cls = classSelect.value;
+  for (let line of lines) {
+    const parts = line.split(",");
+    if (parts.length >= 2) {
+      const name = parts[1].trim();
+      const existing = await db.students.where({ category: cat, grade: grade, class: cls, name }).first();
+      if (!existing) {
+        await db.students.add({ category: cat, grade: grade, class: cls, name, stars: 0, badge: "", level: "Newbie" });
+      }
+    }
+  }
+  document.getElementById("import-list").value = "";
+  showNotification(`✅ Students imported!`, "#5b6cff");
+  renderStudents();
+}
+
+// ADD/REMOVE STAR
+async function addStar(studentId, event) {
+  const student = await db.students.get(studentId);
+  await db.starEvents.add({ studentId, type: "add", timestamp: new Date() });
+  await db.students.update(studentId, { stars: student.stars + 1 });
+  animateStar(event.target);
+  playSound(starSound);
+  renderStudents();
+}
+async function removeStar(studentId, event) {
+  const student = await db.students.get(studentId);
+  if (student.stars <= 0) {
+    alert("No stars to remove!");
+    return;
+  }
+  await db.starEvents.add({ studentId, type: "remove", timestamp: new Date() });
+  await db.students.update(studentId, { stars: student.stars - 1 });
+  animateMinus(event.target);
+  playSound(removeSound);
+  renderStudents();
+}
+
+// DELETE STUDENT
+async function deleteStudent(studentId) {
+  if (confirm("Delete this student?")) {
+    await db.students.delete(studentId);
+    showNotification("🗑️ Student deleted", "#e63946");
+    renderStudents();
+  }
+}
+
+// DASHBOARD UPDATE
+async function updateDashboard() {
+  const allStudents = await db.students.toArray();
+  totalStudentsEl.textContent = `${allStudents.length} 🏫`;
+
+  // Count stars given today (since midnight)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const starEventsToday = await db.starEvents.where("timestamp").aboveOrEqual(today).toArray();
+  const addStarsToday = starEventsToday.filter(ev => ev.type === "add").length;
+  starCountEl.textContent = `⭐ ${addStarsToday}`;
+
+  // Find top performer in whole school
+  // Find top performer in whole school
+if (allStudents.length) {
+  const topStudent = allStudents.reduce((a, b) =>
+    a.stars > b.stars ? a : b
+  );
+
+  const badgeText = topStudent.badge || "⭐ No Badge";
+
+  topPerformerEl.textContent =
+    `${topStudent.name} (${topStudent.grade}${topStudent.class}) | ${badgeText} (${topStudent.stars} ⭐)`;
+} else {
+  topPerformerEl.textContent = "⭐ None Yet";
+}
+  updateTopStudents();
+}
+
+// DASHBOARD TOP STUDENTS BY SELECTION
+
+async function updateTopStudents() {
+  const cat = dashCategory.value;
+  const grade = dashGrade.value;
+  const cls = dashClass.value;
+
+  const classStudents = await db.students.where({ category: cat, grade, class: cls }).toArray();
+  const categoryStudents = await db.students.where({ category: cat }).toArray();
+
+  // 🏆 Top Student in Class
+  if (classStudents.length) {
+    const topClass = classStudents.reduce((a, b) => (a.stars > b.stars ? a : b));
+    const badgeText = topClass.badge || "⭐ No Badge";
+
+    document.getElementById("top-class").textContent =
+      `${topClass.name} – ${topClass.grade}${topClass.class} | ${badgeText} (${topClass.stars} ⭐)`;
+  } else {
+    document.getElementById("top-class").textContent = "⭐ None";
+  }
+
+  // 🌟 Top Student in Category
+  if (categoryStudents.length) {
+    const topCat = categoryStudents.reduce((a, b) => (a.stars > b.stars ? a : b));
+    const badgeText = topCat.badge || "⭐ No Badge";
+
+    document.getElementById("top-category").textContent =
+      `${topCat.name} – ${topCat.grade}${topCat.class} | ${badgeText} (${topCat.stars} ⭐)`;
+  } else {
+    document.getElementById("top-category").textContent = "⭐ None";
+  }
+}
+// ANIMATIONS & SOUNDS
+function animateStar(target) {
+  const star = document.createElement("div");
+  star.className = "star-fly";
+  star.textContent = "⭐";
+  const rect = target.getBoundingClientRect();
+  star.style.left = rect.left + rect.width / 2 + "px";
+  star.style.top = rect.top + "px";
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 1000);
+}
+function animateMinus(target) {
+  const minus = document.createElement("div");
+  minus.className = "minus-grow";
+  minus.textContent = "-1";
+  const rect = target.getBoundingClientRect();
+  minus.style.left = rect.left + rect.width / 2 + "px";
+  minus.style.top = rect.top + "px";
+  document.body.appendChild(minus);
+  setTimeout(() => minus.remove(), 800);
+}
+function playSound(audio) {
+  audio.currentTime = 0;
+  audio.play();
+}
+
+// CERTIFICATE PRINT
+async function printCertificate(studentId) {
+  const student = await db.students.get(studentId);
+  if (!student) return;
+
+  const starsVisual = "⭐".repeat(
+    Math.min(10, Math.max(1, Math.floor(student.stars / 20)))
+  );
+
+  const certHTML = `
+    <div class="kids-certificate">
+      <div class="kids-inner-frame"></div>
+
+      <div class="kids-title">
+        <h1>CERTIFICATE OF EXCELLENCE</h1>
+        <span>Presented with pride by N-Reward School System</span>
+      </div>
+
+      <div class="kids-ribbon">🏅 Outstanding Achievement 🏅</div>
+
+      <div class="kids-name">${student.name}</div>
+
+      <div class="kids-info">
+        Grade <strong>${student.grade}</strong> — Class <strong>${student.class}</strong>
+      </div>
+
+      <div class="kids-stars">${starsVisual}</div>
+
+      <div class="kids-info">
+        Total Stars Earned: <strong>${student.stars}</strong>
+      </div>
+
+      <div class="kids-badge">
+        🏆 <strong>${student.badge || "No Badge"}</strong><br>
+        Level: <strong>${student.level}</strong>
+      </div>
+
+      <div class="kids-footer">
+        Date: ${new Date().toLocaleDateString()}<br>
+        Teacher Signature: ____________
+      </div>
+
+      <div class="kids-seal">🌟</div>
+    </div>
+  `;
+
+  printableCertificate.innerHTML = certHTML;
+  printableCertificate.style.display = "block";
+
+  window.print();
+
+  printableCertificate.style.display = "none";
+} 
+// REWARD SECTION ELEMENTS
+const rewardCategory = document.getElementById("reward-category-select");
+const rewardGrade = document.getElementById("reward-grade-select");
+const rewardClass = document.getElementById("reward-class-select");
+const rewardStudent = document.getElementById("reward-student-select");
+// Show selected student info (Rewards section)
+rewardStudent.addEventListener("change", async () => {
+  const studentId = parseInt(rewardStudent.value);
+  const infoBox = document.getElementById("selected-student-info");
+
+  if (!studentId) {
+    infoBox.style.display = "none";
+    return;
+  }
+
+  const student = await db.students.get(studentId);
+  if (!student) return;
+
+  document.getElementById("info-name").textContent = student.name;
+  document.getElementById("info-class").textContent =
+    `${student.grade}${student.class}`;
+  document.getElementById("info-stars").textContent =
+    `${student.stars} Stars`;
+
+  infoBox.style.display = "block";
+});
+// Populate categories
+function populateRewardCategories() {
+  rewardCategory.innerHTML = '<option value="">Select Category</option>';
+  Object.keys(gradesByCategory).forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    rewardCategory.appendChild(opt);
+  });
+}
+populateRewardCategories();
+
+// Update grades based on category
+rewardCategory.addEventListener("change", () => {
+  rewardGrade.innerHTML = '<option value="">Select Grade</option>';
+  rewardClass.innerHTML = '<option value="">Select Class</option>';
+  rewardStudent.innerHTML = '<option value="">Select Student</option>';
+  const cat = rewardCategory.value;
+  if (!cat) return;
+  gradesByCategory[cat].forEach(grade => {
+    const opt = document.createElement("option");
+    opt.value = grade;
+    opt.textContent = grade;
+    rewardGrade.appendChild(opt);
+  });
+});
+
+// Update classes based on grade
+rewardGrade.addEventListener("change", () => {
+  rewardClass.innerHTML = '<option value="">Select Class</option>';
+  rewardStudent.innerHTML = '<option value="">Select Student</option>';
+  const grade = rewardGrade.value;
+  if (!grade) return;
+  classesByGrade[grade].forEach(cls => {
+    const opt = document.createElement("option");
+    opt.value = cls;
+    opt.textContent = cls;
+    rewardClass.appendChild(opt);
+  });
+});
+
+// Update students based on class
+rewardClass.addEventListener("change", async () => {
+  rewardStudent.innerHTML = '<option value="">Select Student</option>';
+  const cat = rewardCategory.value;
+  const grade = rewardGrade.value;
+  const cls = rewardClass.value;
+  if (!cat || !grade || !cls) return;
+  const students = await db.students.where({ category: cat, grade, class: cls }).toArray();
+  students.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.id; // store ID for reward
+    opt.textContent = s.name;
+    rewardStudent.appendChild(opt);
+  });
+});
+const reportCategory = document.getElementById("report-category");
+const reportGrade = document.getElementById("report-grade");
+const reportClass = document.getElementById("report-class");
+const reportContent = document.getElementById("report-content");
+
+// Populate report categories
+function populateReportCategories() {
+  reportCategory.innerHTML = '';
+  Object.keys(gradesByCategory).forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    reportCategory.appendChild(opt);
+  });
+  updateReportGradeOptions();
+}
+function updateReportGradeOptions() {
+  const cat = reportCategory.value;
+  reportGrade.innerHTML = '';
+  if (!cat) return;
+  gradesByCategory[cat].forEach(grade => {
+    const opt = document.createElement('option');
+    opt.value = grade;
+    opt.textContent = grade;
+    reportGrade.appendChild(opt);
+  });
+  updateReportClassOptions();
+}
+function updateReportClassOptions() {
+  const grade = reportGrade.value;
+  reportClass.innerHTML = '';
+  if (!grade) return;
+  classesByGrade[grade].forEach(cls => {
+    const opt = document.createElement('option');
+    opt.value = cls;
+    opt.textContent = cls;
+    reportClass.appendChild(opt);
+  });
+  generateReport();
+}
+
+// Generate report
+async function generateReport() {
+  const cat = reportCategory.value;
+  const grade = reportGrade.value;
+  const cls = reportClass.value;
+
+  if (!cat || !grade || !cls) {
+    reportContent.innerHTML = '<h3>Select category, grade, and class to view report</h3>';
+    return;
+  }
+
+  const students = await db.students
+    .where({ category: cat, grade, class: cls })
+    .toArray();
+
+  if (!students.length) {
+    reportContent.innerHTML = '<h3>No students found in this class</h3>';
+    return;
+  }
+
+  // 📊 Calculations
+  const totalStudents = students.length;
+  const totalStars = students.reduce((sum, s) => sum + s.stars, 0);
+  const avgStars = (totalStars / totalStudents).toFixed(1);
+  const topStudent = students.reduce((a, b) => (a.stars > b.stars ? a : b));
+
+  // 🧾 Report HTML
+  let html = `
+    <div id="printable-report">
+      <h2>📊 Class Report</h2>
+      <p><strong>Category:</strong> ${cat}</p>
+      <p><strong>Grade:</strong> ${grade}</p>
+      <p><strong>Class:</strong> ${cls}</p>
+      <hr>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px;">
+        <div class="card">👩‍🎓 <strong>Total Students:</strong><br>${totalStudents}</div>
+        <div class="card">⭐ <strong>Total Stars:</strong><br>${totalStars}</div>
+        <div class="card">📈 <strong>Average Stars:</strong><br>${avgStars}</div>
+        <div class="card">🏆 <strong>Top Student:</strong><br>${topStudent.name} (${topStudent.stars} ⭐)</div>
+      </div>
+
+      <hr>
+
+      <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th style="padding:8px;">Name</th>
+            <th>Stars</th>
+            <th>Level</th>
+            <th>Badge</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  students.forEach(s => {
+    html += `
+      <tr style="border-bottom:1px solid #ddd;">
+        <td style="padding:8px;">${s.name}</td>
+        <td>⭐ ${s.stars}</td>
+        <td>${s.level}</td>
+        <td>${s.badge || '-'}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+
+      <br>
+      <button onclick="printReport()">🖨️ Print Report</button>
+    </div>
+  `;
+
+  reportContent.innerHTML = html;
+}
+// Initialize report dropdowns
+populateReportCategories();
+// INITIALIZATION
+populateCategories();
+showSection("dashboard");
+updateDashboard();
+async function redeemReward(starsRequired, rewardName) {
+  const studentId = parseInt(rewardStudent.value);
+  if (!studentId) {
+    showNotification("❗ Select a student first", "#e63946");
+    return;
+  }
+
+  const student = await db.students.get(studentId);
+  if (!student) return;
+
+  if (student.stars < starsRequired) {
+    showNotification(`❌ ${student.name} doesn't have enough stars`, "#e63946");
+    return;
+  }
+
+  // Deduct stars
+  await db.students.update(studentId, { stars: student.stars - starsRequired });
+  await db.starEvents.add({ studentId, type: "redeem", timestamp: new Date() });
+
+  showNotification(
+  `🎉 ${student.name} redeemed ${starsRequired} ⭐ for: ${rewardName}`,
+  "#5b6cff"
+);
+
+// 🔊 Sound
+playSound(rewardSound);
+
+// ✨ Animation
+animateReward();
+
+renderStudents();
+updateDashboard();// Initialize reward dropdowns
+populateRewardCategories();
+}
+function printReport() {
+  const report = document.getElementById("printable-report");
+  if (!report) return;
+
+  const originalBody = document.body.innerHTML;
+  document.body.innerHTML = report.outerHTML;
+
+  window.print();
+
+  document.body.innerHTML = originalBody;
+  location.reload(); // restore app state safely
+}
+function animateReward() {
+  for (let i = 0; i < 8; i++) {
+    const star = document.createElement("div");
+    star.className = "reward-burst";
+    star.textContent = "⭐";
+    star.style.left = Math.random() * window.innerWidth + "px";
+    star.style.top = window.innerHeight / 2 + "px";
+    document.body.appendChild(star);
+    setTimeout(() => star.remove(), 1200);
+  }
+}
+// SIMPLE TEACHER LOGIN (SAFE, NON-DESTRUCTIVE)
+const TEACHER_USER = "teacher";
+const TEACHER_PASS = "1234"; // change this
+
+function teacherLogin() {
+  const user = document.getElementById("login-username").value;
+  const pass = document.getElementById("login-password").value;
+
+  if (user === TEACHER_USER && pass === TEACHER_PASS) {
+    localStorage.setItem("teacherLoggedIn", "yes");
+    document.getElementById("login-screen").style.display = "none";
+  } else {
+    document.getElementById("login-error").style.display = "block";
+  }
+}
+
+// Auto-login check
+if (localStorage.getItem("teacherLoggedIn") === "yes") {
+  document.getElementById("login-screen").style.display = "none";
+}
+
+function logout() {
+  localStorage.removeItem("teacherLoggedIn");
+  location.reload();
+}
+const certificateModal = document.getElementById("certificate-modal");
+const certificatePreview = document.getElementById("certificate-preview");
+
+let currentCertStudentId = null;
+
+async function previewCertificate(studentId) {
+  currentCertStudentId = studentId;
+  const student = await db.students.get(studentId);
+  if (!student) return;
+
+  const starsVisual = "⭐".repeat(
+    Math.min(10, Math.max(1, Math.floor(student.stars / 20)))
+  );
+
+  certificatePreview.innerHTML = `
+    <div class="kids-certificate">
+      <div class="kids-inner-frame"></div>
+
+      <div class="kids-title">
+        <h1>CERTIFICATE OF EXCELLENCE</h1>
+        <span>Presented with pride by N-Reward School System</span>
+      </div>
+
+      <div class="kids-ribbon">🏅 Outstanding Achievement 🏅</div>
+
+      <div class="kids-name">${student.name}</div>
+
+      <div class="kids-info">
+        Grade <strong>${student.grade}</strong> — Class <strong>${student.class}</strong>
+      </div>
+
+      <div class="kids-stars">${starsVisual}</div>
+
+      <div class="kids-info">
+        Total Stars Earned: <strong>${student.stars}</strong>
+      </div>
+
+      <div class="kids-badge">
+        🏆 <strong>${student.badge || "No Badge"}</strong><br>
+        Level: <strong>${student.level}</strong>
+      </div>
+
+      <div class="kids-footer">
+        Date: ${new Date().toLocaleDateString()}<br>
+        Teacher Signature: ____________
+      </div>
+
+      <div class="kids-seal">🌟</div>
+    </div>
+  `;
+
+  certificateModal.style.display = "flex";
+}
+
+function closeCertificatePreview() {
+  certificateModal.style.display = "none";
+}
+
+function printFromPreview() {
+  printableCertificate.innerHTML = certificatePreview.innerHTML;
+  printableCertificate.style.display = "block";
+
+  certificateModal.style.display = "none";
+
+  window.print();
+
+  printableCertificate.style.display = "none";
+}
+</script>
+</body>
+</html>
