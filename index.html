@@ -198,9 +198,7 @@ footer {
 }
 
 @media print {
-  body * {
-    visibility: hidden;
-  }
+  body * { visibility: hidden; }
 
   #printable-report,
   #printable-report * {
@@ -211,14 +209,15 @@ footer {
   #printable-certificate * {
     visibility: visible;
   }
-@media print {
-  #printable-certificate {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    page-break-after: avoid;
-  }
 
+  #printable-report,
+  #printable-certificate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
   .kids-certificate {
     margin: auto;
   }
@@ -484,13 +483,19 @@ footer {
   <hr />
   <h3>Check Top Student by Category / Grade / Class</h3>
   <label for="dash-category">Select Category:</label>
-  <select id="dash-category" onchange="updateDashGradeOptions()"></select>
+  <select id="dash-category" onchange="updateDashGradeOptions()">
+<option value="">Select Category</option>
+</select>
 
   <label for="dash-grade">Select Grade:</label>
-  <select id="dash-grade" onchange="updateDashClassOptions()"></select>
+  <select id="dash-grade" onchange="updateDashClassOptions()">
+<option value="">Select Grade</option>
+</select>
 
   <label for="dash-class">Select Class:</label>
-  <select id="dash-class" onchange="updateTopStudents()"></select>
+  <select id="dash-class" onchange="updateTopStudents()">
+<option value="">Select Class</option>
+</select>
 
   <div class="grid" style="margin-top: 20px;">
     <div class="card">
@@ -508,14 +513,19 @@ footer {
   <h2>Students by Class</h2>
 
   <label for="category-select">Select Category:</label>
-  <select id="category-select" onchange="updateGradeOptions()"></select>
+  <select id="category-select" onchange="updateGradeOptions()">
+<option value="">Select Category</option>
+</select>
 
   <label for="grade-select">Select Grade:</label>
-  <select id="grade-select" onchange="updateClassOptions()"></select>
+  <select id="grade-select" onchange="updateClassOptions()">
+<option value="">Select Grade</option>
+</select>
 
   <label for="class-select">Select Class:</label>
-  <select id="class-select" onchange="renderStudents()"></select>
-
+  <select id="class-select" onchange="renderStudents()">
+<option value="">Select Class</option>
+</select>
   <div id="student-grid" class="grid"></div>
 
   <hr />
@@ -611,13 +621,19 @@ footer {
   
   <div style="margin-bottom: 20px;">
     <label for="report-category">Category:</label>
-    <select id="report-category" onchange="updateReportGradeOptions()"></select>
+    <select id="report-category" onchange="updateReportGradeOptions()">
+<option value="">Select Category</option>
+</select>
 
     <label for="report-grade">Grade:</label>
-    <select id="report-grade" onchange="updateReportClassOptions()"></select>
+    <select id="report-grade" onchange="updateReportClassOptions()">
+<option value="">Select Grade</option>
+</select>
 
     <label for="report-class">Class:</label>
-    <select id="report-class" onchange="generateReport()"></select>
+    <select id="report-class" onchange="generateReport()">
+<option value="">Select Class</option>
+</select>
   </div>
 
   <div id="report-content" style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.08);">
@@ -702,9 +718,41 @@ db.version(1).stores({
   students: "++id, category, grade, class, name, stars, badge, level",
   starEvents: "++id, studentId, type, timestamp"
 });
+/* ===========================
+   🔄 DYNAMIC UI AUTO-REFRESH
+   =========================== */
+
+let refreshTimer = null;
+
+function scheduleUIRefresh() {
+  if (refreshTimer) return;
+
+  refreshTimer = setTimeout(() => {
+    refreshTimer = null;
+    refreshUI();
+  }, 100);
+}
+
+// Dexie hooks (ONE TIME)
+db.students.hook("creating", () => scheduleUIRefresh());
+db.students.hook("updating", () => scheduleUIRefresh());
+db.students.hook("deleting", () => scheduleUIRefresh());
+
+function refreshUI() {
+  renderStudents();
+  updateDashboard();
+  updateTopStudents();
+generateReport();
+}
 
 // ELEMENTS
 const notification = document.getElementById("notification");
+async function refreshUI() {
+  await updateDashboard();
+  await updateTopStudents();
+  renderStudents();
+  generateReport();  // <-- NEW (dynamic reports)
+}
 const starCountEl = document.getElementById("star-count");
 const topPerformerEl = document.getElementById("top-performer");
 const studentGrid = document.getElementById("student-grid");
@@ -848,15 +896,18 @@ function populateCategories() {
 function updateGradeOptions() {
   const cat = categorySelect.value;
   gradeSelect.innerHTML = "";
+
+  if (!cat) return;
+
   gradesByCategory[cat].forEach((grade) => {
     const opt = document.createElement("option");
     opt.value = grade;
     opt.textContent = grade;
     gradeSelect.appendChild(opt);
   });
+
   updateClassOptions();
 }
-
 function updateClassOptions() {
   const grade = gradeSelect.value;
   classSelect.innerHTML = "";
@@ -900,11 +951,25 @@ async function renderStudents() {
   const grade = gradeSelect.value;
   const cls = classSelect.value;
   const classStudents = await db.students.where({ category: cat, grade: grade, class: cls }).toArray();
+// 🚫 Prevent crash when dropdowns are empty
+  if (!cat || !grade || !cls) {
+    studentGrid.innerHTML = "";
+    return;
+  }
   studentGrid.innerHTML = "";
   for (let student of classStudents) {
-    student.level = getLevel(student.stars);
-    student.badge = getBadge(student.stars);
-    await db.students.update(student.id, { level: student.level, badge: student.badge });
+    const newLevel = getLevel(student.stars);
+const newBadge = getBadge(student.stars);
+
+// Only update if changed
+if (student.level !== newLevel || student.badge !== newBadge) {
+  await db.students.update(student.id, {
+    level: newLevel,
+    badge: newBadge
+  });
+  student.level = newLevel;
+  student.badge = newBadge;
+}
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
@@ -937,9 +1002,9 @@ async function addNewStudent() {
     return;
   }
   await db.students.add({ category: cat, grade: grade, class: cls, name, stars: 0, badge: "", level: "Newbie" });
+refreshUI();
   document.getElementById("new-student-name").value = "";
   showNotification(`✅ ${name} added!`, "#5b6cff");
-  renderStudents();
 }
 
 // IMPORT
@@ -955,22 +1020,27 @@ async function importStudents() {
       const existing = await db.students.where({ category: cat, grade: grade, class: cls, name }).first();
       if (!existing) {
         await db.students.add({ category: cat, grade: grade, class: cls, name, stars: 0, badge: "", level: "Newbie" });
+
+refreshUI();
       }
     }
   }
   document.getElementById("import-list").value = "";
   showNotification(`✅ Students imported!`, "#5b6cff");
-  renderStudents();
 }
 
 // ADD/REMOVE STAR
 async function addStar(studentId, event) {
   const student = await db.students.get(studentId);
-  await db.starEvents.add({ studentId, type: "add", timestamp: new Date() });
+
   await db.students.update(studentId, { stars: student.stars + 1 });
-  animateStar(event.target);
-  playSound(starSound);
-  renderStudents();
+await db.starEvents.add({ studentId, type: "add", timestamp: new Date() });
+
+animateStar(event.target);
+playSound(starSound);
+
+// refresh everything
+refreshUI();
 }
 async function removeStar(studentId, event) {
   const student = await db.students.get(studentId);
@@ -979,18 +1049,23 @@ async function removeStar(studentId, event) {
     return;
   }
   await db.starEvents.add({ studentId, type: "remove", timestamp: new Date() });
-  await db.students.update(studentId, { stars: student.stars - 1 });
-  animateMinus(event.target);
-  playSound(removeSound);
-  renderStudents();
+await db.students.update(studentId, { stars: student.stars - 1 });
+
+animateMinus(event.target);
+playSound(removeSound);
+
+// refresh everything
+refreshUI();
 }
 
 // DELETE STUDENT
 async function deleteStudent(studentId) {
   if (confirm("Delete this student?")) {
     await db.students.delete(studentId);
-    showNotification("🗑️ Student deleted", "#e63946");
-    renderStudents();
+showNotification("🗑️ Student deleted", "#e63946");
+
+// refresh
+refreshUI(); 
   }
 }
 
@@ -1263,11 +1338,11 @@ async function generateReport() {
   const grade = reportGrade.value;
   const cls = reportClass.value;
 
+  // ⛔ prevent crash if dropdown is empty
   if (!cat || !grade || !cls) {
-    reportContent.innerHTML = '<h3>Select category, grade, and class to view report</h3>';
+    reportContent.innerHTML = "<p>Select category, grade & class to view report.</p>";
     return;
   }
-
   const students = await db.students
     .where({ category: cat, grade, class: cls })
     .toArray();
@@ -1355,37 +1430,48 @@ async function redeemReward(starsRequired, rewardName) {
     showNotification(`❌ ${student.name} doesn't have enough stars`, "#e63946");
     return;
   }
-
+// Refresh selected student info
+if (rewardStudent.value == studentId) {
+  document.getElementById("info-stars").textContent =
+    `${student.stars - starsRequired} Stars`;
+}
   // Deduct stars
-  await db.students.update(studentId, { stars: student.stars - starsRequired });
-  await db.starEvents.add({ studentId, type: "redeem", timestamp: new Date() });
+  // 1️⃣ Deduct stars
+await db.students.update(studentId, {
+  stars: student.stars - starsRequired
+});
 
-  showNotification(
+// 2️⃣ Add reward event
+await db.starEvents.add({
+  studentId,
+  type: "redeem",
+  timestamp: new Date()
+});
+
+// 3️⃣ Fetch updated student data
+const updatedStudent = await db.students.get(studentId);
+
+// 4️⃣ Update the rewards info box
+document.getElementById("info-stars").textContent =
+  `${updatedStudent.stars} Stars`;
+
+// 5️⃣ Notification
+showNotification(
   `🎉 ${student.name} redeemed ${starsRequired} ⭐ for: ${rewardName}`,
   "#5b6cff"
 );
-
 // 🔊 Sound
 playSound(rewardSound);
 
 // ✨ Animation
 animateReward();
-
-renderStudents();
-updateDashboard();// Initialize reward dropdowns
+refreshUI();
+// Initialize reward dropdowns
 populateRewardCategories();
 }
 function printReport() {
-  const report = document.getElementById("printable-report");
-  if (!report) return;
-
-  const originalBody = document.body.innerHTML;
-  document.body.innerHTML = report.outerHTML;
-
-  window.print();
-
-  document.body.innerHTML = originalBody;
-  location.reload(); // restore app state safely
+  generateReport(); // Ensure the latest report is generated
+  window.print();   // Open the print dialog for the report
 }
 function animateReward() {
   for (let i = 0; i < 8; i++) {
@@ -1494,3 +1580,4 @@ function printFromPreview() {
 </script>
 </body>
 </html>
+
