@@ -221,7 +221,6 @@ footer {
   .kids-certificate {
     margin: auto;
   }
-}
   #printable-report,
   #printable-certificate {
     position: absolute;
@@ -738,13 +737,6 @@ db.students.hook("creating", () => scheduleUIRefresh());
 db.students.hook("updating", () => scheduleUIRefresh());
 db.students.hook("deleting", () => scheduleUIRefresh());
 
-function refreshUI() {
-  renderStudents();
-  updateDashboard();
-  updateTopStudents();
-generateReport();
-}
-
 // ELEMENTS
 const notification = document.getElementById("notification");
 async function refreshUI() {
@@ -783,8 +775,8 @@ const classesByGrade = {
   KG1: ["A", "B", "C"],
   KG2: ["A", "B", "C"],
   KG3: ["A", "B"],
-  Grade1: ["A", "B", "C"],
-  Grade2: ["A", "B", "C"],
+Grade1: ["A", "B", "C", "D", "E", "F"],
+Grade2: ["A", "B", "C", "D", "E", "F"],
   Grade3: ["A", "B", "C", "D"],
   Grade4: ["A", "B", "C", "D"],
   Grade5: ["A", "B", "C", "D"],
@@ -1580,4 +1572,3 @@ function printFromPreview() {
 </script>
 </body>
 </html>
-
